@@ -1413,6 +1413,25 @@ static bool c_tinyusd_try_get_schema_property_info(
     return false;
   };
 
+  auto set_preview_surface_common = [&]() {
+    if (prop_name == "inputs:diffuseColor") return set_attr("color3f", "(0.18, 0.18, 0.18)");
+    if (prop_name == "inputs:emissiveColor") return set_attr("color3f", "(0, 0, 0)");
+    if (prop_name == "inputs:useSpecularWorkflow") return set_attr("int", "0");
+    if (prop_name == "inputs:specularColor") return set_attr("color3f", "(0, 0, 0)");
+    if (prop_name == "inputs:metallic") return set_attr("float", "0");
+    if (prop_name == "inputs:clearcoat") return set_attr("float", "0");
+    if (prop_name == "inputs:clearcoatRoughness") return set_attr("float", "0.01");
+    if (prop_name == "inputs:roughness") return set_attr("float", "0.5");
+    if (prop_name == "inputs:opacity") return set_attr("float", "1");
+    if (prop_name == "inputs:opacityMode") return set_attr("token", "transparent");
+    if (prop_name == "inputs:opacityThreshold") return set_attr("float", "0");
+    if (prop_name == "inputs:ior") return set_attr("float", "1.5");
+    if (prop_name == "inputs:normal") return set_attr("normal3f", "(0, 0, 1)");
+    if (prop_name == "inputs:displacement") return set_attr("float", "0");
+    if (prop_name == "inputs:occlusion") return set_attr("float", "0");
+    return false;
+  };
+
   if (pprim->is<tinyusdz::GeomCamera>()) {
     if (prop_name == "projection") return set_attr("token", "perspective");
     if (prop_name == "focalLength") return set_attr("float", "50");
@@ -1464,6 +1483,14 @@ static bool c_tinyusd_try_get_schema_property_info(
     if (set_light_common()) return true;
     if (prop_name == "guideRadius") return set_attr("float", "100000");
     if (prop_name == "inputs:texture:format") return set_attr("token", "automatic");
+  }
+
+  if (pprim->is<tinyusdz::Shader>()) {
+    const tinyusdz::Shader *shader = pprim->as<tinyusdz::Shader>();
+    if (shader && (shader->info_id == tinyusdz::kUsdPreviewSurface ||
+                   shader->info_id == "UsdPreviewSurface")) {
+      if (set_preview_surface_common()) return true;
+    }
   }
 
   return false;
@@ -2890,6 +2917,24 @@ int c_tinyusd_prim_get_property_names(const CTinyUSDPrim *prim, c_tinyusd_token_
     append_property_names_tokens(typed_prim);
   };
 
+  auto append_preview_surface_common_names = [&]() {
+    append_name("inputs:diffuseColor");
+    append_name("inputs:emissiveColor");
+    append_name("inputs:useSpecularWorkflow");
+    append_name("inputs:specularColor");
+    append_name("inputs:metallic");
+    append_name("inputs:clearcoat");
+    append_name("inputs:clearcoatRoughness");
+    append_name("inputs:roughness");
+    append_name("inputs:opacity");
+    append_name("inputs:opacityMode");
+    append_name("inputs:opacityThreshold");
+    append_name("inputs:ior");
+    append_name("inputs:normal");
+    append_name("inputs:displacement");
+    append_name("inputs:occlusion");
+  };
+
   if (p->is<tinyusdz::Model>()) {
     append_names_for_typed_prim(*p->as<tinyusdz::Model>());
     has_any = true;
@@ -2909,7 +2954,12 @@ int c_tinyusd_prim_get_property_names(const CTinyUSDPrim *prim, c_tinyusd_token_
     append_names_for_typed_prim(*p->as<tinyusdz::GeomCamera>());
     has_any = true;
   } else if (p->is<tinyusdz::Shader>()) {
-    append_names_for_typed_prim(*p->as<tinyusdz::Shader>());
+    const tinyusdz::Shader &shader = *p->as<tinyusdz::Shader>();
+    append_names_for_typed_prim(shader);
+    if (shader.info_id == tinyusdz::kUsdPreviewSurface ||
+        shader.info_id == "UsdPreviewSurface") {
+      append_preview_surface_common_names();
+    }
     has_any = true;
   } else if (p->is<tinyusdz::Material>()) {
     append_names_for_typed_prim(*p->as<tinyusdz::Material>());
