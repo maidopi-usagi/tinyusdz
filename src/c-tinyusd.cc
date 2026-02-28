@@ -1376,6 +1376,99 @@ static bool c_tinyusd_find_prim_property(const tinyusdz::Prim *pprim,
   return false;
 }
 
+struct c_tinyusd_schema_property_info {
+  std::string object_kind;
+  std::string type_name;
+  std::string default_text;
+  std::string variability;
+};
+
+static bool c_tinyusd_try_get_schema_property_info(
+    const tinyusdz::Prim *pprim,
+    const std::string &prop_name,
+    c_tinyusd_schema_property_info *info) {
+  if (!pprim || !info) {
+    return false;
+  }
+
+  auto set_attr = [&](const std::string &type_name,
+                      const std::string &default_text,
+                      const std::string &variability = "varying") {
+    info->object_kind = "attribute";
+    info->type_name = type_name;
+    info->default_text = default_text;
+    info->variability = variability;
+    return true;
+  };
+
+  auto set_light_common = [&]() {
+    if (prop_name == "inputs:color") return set_attr("color3f", "(1, 1, 1)");
+    if (prop_name == "inputs:colorTemperature") return set_attr("float", "6500");
+    if (prop_name == "inputs:diffuse") return set_attr("float", "1");
+    if (prop_name == "inputs:enableColorTemperature") return set_attr("bool", "false");
+    if (prop_name == "inputs:exposure") return set_attr("float", "0");
+    if (prop_name == "inputs:intensity") return set_attr("float", "1");
+    if (prop_name == "inputs:normalize") return set_attr("bool", "false");
+    if (prop_name == "inputs:specular") return set_attr("float", "1");
+    return false;
+  };
+
+  if (pprim->is<tinyusdz::GeomCamera>()) {
+    if (prop_name == "projection") return set_attr("token", "perspective");
+    if (prop_name == "focalLength") return set_attr("float", "50");
+    if (prop_name == "horizontalAperture") return set_attr("float", "20.965");
+    if (prop_name == "verticalAperture") return set_attr("float", "15.2908");
+    if (prop_name == "horizontalApertureOffset") return set_attr("float", "0");
+    if (prop_name == "verticalApertureOffset") return set_attr("float", "0");
+    if (prop_name == "clippingRange") return set_attr("float2", "(0.1, 1000000)");
+    if (prop_name == "exposure") return set_attr("float", "0");
+    if (prop_name == "focusDistance") return set_attr("float", "0");
+    if (prop_name == "fStop") return set_attr("float", "0");
+    if (prop_name == "stereoRole") return set_attr("token", "mono", "uniform");
+    if (prop_name == "shutterOpen") return set_attr("double", "0");
+    if (prop_name == "shutterClose") return set_attr("double", "0");
+  }
+
+  if (pprim->is<tinyusdz::GeomMesh>()) {
+    if (prop_name == "doubleSided") return set_attr("bool", "false", "uniform");
+  }
+
+  if (pprim->is<tinyusdz::SphereLight>()) {
+    if (set_light_common()) return true;
+    if (prop_name == "inputs:radius") return set_attr("float", "0.5");
+  }
+
+  if (pprim->is<tinyusdz::CylinderLight>()) {
+    if (set_light_common()) return true;
+    if (prop_name == "inputs:length") return set_attr("float", "1");
+    if (prop_name == "inputs:radius") return set_attr("float", "0.5");
+  }
+
+  if (pprim->is<tinyusdz::RectLight>()) {
+    if (set_light_common()) return true;
+    if (prop_name == "inputs:height") return set_attr("float", "1");
+    if (prop_name == "inputs:width") return set_attr("float", "1");
+  }
+
+  if (pprim->is<tinyusdz::DiskLight>()) {
+    if (set_light_common()) return true;
+    if (prop_name == "inputs:radius") return set_attr("float", "0.5");
+  }
+
+  if (pprim->is<tinyusdz::DistantLight>()) {
+    if (set_light_common()) return true;
+    if (prop_name == "inputs:angle") return set_attr("float", "0.53");
+  }
+
+  if (pprim->is<tinyusdz::DomeLight>()) {
+    if (set_light_common()) return true;
+    if (prop_name == "guideRadius") return set_attr("float", "100000");
+    if (prop_name == "inputs:texture:format") return set_attr("token", "automatic");
+  }
+
+  return false;
+}
+
 int c_tinyusd_prim_property_get_value(const CTinyUSDPrim *prim,
                                       const char *prop_name,
                                       const CTinyUSDValue **value) {
@@ -1428,7 +1521,11 @@ int c_tinyusd_prim_property_get_type_name(const CTinyUSDPrim *prim,
   const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
   tinyusdz::Property prop;
   if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
-    return 0;
+    c_tinyusd_schema_property_info info;
+    if (!c_tinyusd_try_get_schema_property_info(pprim, prop_name, &info)) {
+      return 0;
+    }
+    return c_tinyusd_string_replace(type_name_out, info.type_name.c_str());
   }
 
   std::string type_name = prop.value_type_name();
@@ -1457,7 +1554,11 @@ int c_tinyusd_prim_property_to_string(const CTinyUSDPrim *prim,
   const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
   tinyusdz::Property prop;
   if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
-    return 0;
+    c_tinyusd_schema_property_info info;
+    if (!c_tinyusd_try_get_schema_property_info(pprim, prop_name, &info)) {
+      return 0;
+    }
+    return c_tinyusd_string_replace(text_out, info.default_text.c_str());
   }
 
   std::string text;
@@ -1509,7 +1610,11 @@ int c_tinyusd_prim_property_metadata_to_string(const CTinyUSDPrim *prim,
 
   const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
   tinyusdz::Property prop;
-  if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
+  const bool found_prop = c_tinyusd_find_prim_property(pprim, prop_name, &prop);
+  c_tinyusd_schema_property_info schema_info;
+  const bool found_schema = c_tinyusd_try_get_schema_property_info(pprim, prop_name, &schema_info);
+
+  if (!found_prop && !found_schema) {
     return 0;
   }
 
@@ -1524,7 +1629,7 @@ int c_tinyusd_prim_property_metadata_to_string(const CTinyUSDPrim *prim,
     text += "\n";
   };
 
-  if (prop.is_attribute()) {
+  if (found_prop && prop.is_attribute()) {
     const tinyusdz::Attribute &attr = prop.get_attribute();
     append_line("object", "attribute");
     append_line("path", property_path);
@@ -1565,7 +1670,7 @@ int c_tinyusd_prim_property_metadata_to_string(const CTinyUSDPrim *prim,
     if (meta.authored()) {
       text += tinyusdz::print_attr_metas(meta, 0);
     }
-  } else if (prop.is_relationship()) {
+  } else if (found_prop && prop.is_relationship()) {
     append_line("object", "relationship");
     append_line("path", property_path);
     append_line("type", "relationship");
@@ -1586,6 +1691,13 @@ int c_tinyusd_prim_property_metadata_to_string(const CTinyUSDPrim *prim,
     if (meta.authored()) {
       text += tinyusdz::print_attr_metas(meta, 0);
     }
+  } else if (found_schema) {
+    append_line("object", schema_info.object_kind);
+    append_line("path", property_path);
+    append_line("type", schema_info.type_name);
+    append_line("variability", schema_info.variability);
+    append_line("default", schema_info.default_text);
+    append_line("authoredMetadata", "false");
   } else {
     append_line("object", "property");
     append_line("path", property_path);
