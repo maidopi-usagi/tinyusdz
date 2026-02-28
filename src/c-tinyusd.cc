@@ -1514,21 +1514,84 @@ int c_tinyusd_prim_property_metadata_to_string(const CTinyUSDPrim *prim,
   }
 
   std::string text;
+  const std::string prim_path = pprim->element_path().full_path_name();
+  const std::string property_path = prim_path + "." + std::string(prop_name);
+
+  auto append_line = [&](const std::string &key, const std::string &value) {
+    text += key;
+    text += " = ";
+    text += value;
+    text += "\n";
+  };
 
   if (prop.is_attribute()) {
-    const tinyusdz::AttrMeta &meta = prop.get_attribute().metas();
+    const tinyusdz::Attribute &attr = prop.get_attribute();
+    append_line("object", "attribute");
+    append_line("path", property_path);
+
+    std::string type_name = attr.type_name();
+    if (type_name.empty()) {
+      type_name = prop.value_type_name();
+    }
+    if (type_name.empty()) {
+      type_name = "unknown";
+    }
+    append_line("type", type_name);
+    append_line("variability", tinyusdz::to_string(attr.variability()));
+
+    if (attr.is_value()) {
+      append_line("default", tinyusdz::value::pprint_value(attr.get_var().value_raw(), 0, false));
+    } else if (attr.is_connection()) {
+      const auto &connections = attr.connections();
+      std::string conn = "[";
+      for (size_t i = 0; i < connections.size(); i++) {
+        if (i > 0) {
+          conn += ", ";
+        }
+        conn += connections[i].full_path_name();
+      }
+      conn += "]";
+      append_line("default", "connect=" + conn);
+    } else if (attr.is_timesamples()) {
+      append_line("default", "[timesamples]");
+    } else if (attr.is_blocked()) {
+      append_line("default", "[blocked]");
+    } else {
+      append_line("default", "[not-authored]");
+    }
+
+    const tinyusdz::AttrMeta &meta = attr.metas();
+    append_line("authoredMetadata", meta.authored() ? "true" : "false");
     if (meta.authored()) {
-      text = tinyusdz::print_attr_metas(meta, 0);
+      text += tinyusdz::print_attr_metas(meta, 0);
     }
   } else if (prop.is_relationship()) {
-    const tinyusdz::AttrMeta &meta = prop.get_relationship().metas();
-    if (meta.authored()) {
-      text = tinyusdz::print_attr_metas(meta, 0);
-    }
-  }
+    append_line("object", "relationship");
+    append_line("path", property_path);
+    append_line("type", "relationship");
 
-  if (text.empty()) {
-    text = "[no-authored-metadata]";
+    std::vector<tinyusdz::Path> targets = prop.get_relationTargets();
+    std::string rel = "[";
+    for (size_t i = 0; i < targets.size(); i++) {
+      if (i > 0) {
+        rel += ", ";
+      }
+      rel += targets[i].full_path_name();
+    }
+    rel += "]";
+    append_line("default", rel);
+
+    const tinyusdz::AttrMeta &meta = prop.get_relationship().metas();
+    append_line("authoredMetadata", meta.authored() ? "true" : "false");
+    if (meta.authored()) {
+      text += tinyusdz::print_attr_metas(meta, 0);
+    }
+  } else {
+    append_line("object", "property");
+    append_line("path", property_path);
+    append_line("type", "unknown");
+    append_line("default", "[unavailable]");
+    append_line("authoredMetadata", "false");
   }
 
   return c_tinyusd_string_replace(text_out, text.c_str());
