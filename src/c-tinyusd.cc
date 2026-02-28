@@ -7,6 +7,7 @@
 #include "tydra/scene-access.hh"
 #include "usdLux.hh"
 #include "prim-pprint.hh"
+#include "pprinter.hh"
 #include "value-pprint.hh"
 #include "common-macros.inc"
 #include "str-util.hh"
@@ -35,8 +36,37 @@ CTinyUSDValueType c_tinyusd_value_type(const CTinyUSDValue *value) {
   uint32_t basety = C_TINYUSD_VALUE_UNKNOWN;
 
   switch (tyid) {
+    case TYPE_ID_TOKEN: {
+      basety = C_TINYUSD_VALUE_TOKEN;
+      break;
+    }
+    case TYPE_ID_TOKEN_VECTOR: {
+      basety = C_TINYUSD_VALUE_TOKEN_VECTOR;
+      break;
+    }
+    case TYPE_ID_STRING:
+    case TYPE_ID_STRING_DATA: {
+      basety = C_TINYUSD_VALUE_STRING;
+      break;
+    }
     case TYPE_ID_BOOL: {
       basety = C_TINYUSD_VALUE_BOOL;
+      break;
+    }
+    case TYPE_ID_HALF: {
+      basety = C_TINYUSD_VALUE_HALF;
+      break;
+    }
+    case TYPE_ID_HALF2: {
+      basety = C_TINYUSD_VALUE_HALF2;
+      break;
+    }
+    case TYPE_ID_HALF3: {
+      basety = C_TINYUSD_VALUE_HALF3;
+      break;
+    }
+    case TYPE_ID_HALF4: {
+      basety = C_TINYUSD_VALUE_HALF4;
       break;
     }
     case TYPE_ID_INT32: {
@@ -69,6 +99,161 @@ CTinyUSDValueType c_tinyusd_value_type(const CTinyUSDValue *value) {
     }
     case TYPE_ID_UINT4: {
       basety = C_TINYUSD_VALUE_UINT4;
+      break;
+    }
+    case TYPE_ID_INT64: {
+      basety = C_TINYUSD_VALUE_INT64;
+      break;
+    }
+    case TYPE_ID_UINT64: {
+      basety = C_TINYUSD_VALUE_UINT64;
+      break;
+    }
+    case TYPE_ID_FLOAT: {
+      basety = C_TINYUSD_VALUE_FLOAT;
+      break;
+    }
+    case TYPE_ID_FLOAT2: {
+      basety = C_TINYUSD_VALUE_FLOAT2;
+      break;
+    }
+    case TYPE_ID_FLOAT3: {
+      basety = C_TINYUSD_VALUE_FLOAT3;
+      break;
+    }
+    case TYPE_ID_FLOAT4: {
+      basety = C_TINYUSD_VALUE_FLOAT4;
+      break;
+    }
+    case TYPE_ID_DOUBLE: {
+      basety = C_TINYUSD_VALUE_DOUBLE;
+      break;
+    }
+    case TYPE_ID_DOUBLE2: {
+      basety = C_TINYUSD_VALUE_DOUBLE2;
+      break;
+    }
+    case TYPE_ID_DOUBLE3: {
+      basety = C_TINYUSD_VALUE_DOUBLE3;
+      break;
+    }
+    case TYPE_ID_DOUBLE4: {
+      basety = C_TINYUSD_VALUE_DOUBLE4;
+      break;
+    }
+    case TYPE_ID_QUATH: {
+      basety = C_TINYUSD_VALUE_QUATH;
+      break;
+    }
+    case TYPE_ID_QUATF: {
+      basety = C_TINYUSD_VALUE_QUATF;
+      break;
+    }
+    case TYPE_ID_QUATD: {
+      basety = C_TINYUSD_VALUE_QUATD;
+      break;
+    }
+    case TYPE_ID_COLOR3H: {
+      basety = C_TINYUSD_VALUE_COLOR3H;
+      break;
+    }
+    case TYPE_ID_COLOR3F: {
+      basety = C_TINYUSD_VALUE_COLOR3F;
+      break;
+    }
+    case TYPE_ID_COLOR3D: {
+      basety = C_TINYUSD_VALUE_COLOR3D;
+      break;
+    }
+    case TYPE_ID_COLOR4H: {
+      basety = C_TINYUSD_VALUE_COLOR4H;
+      break;
+    }
+    case TYPE_ID_COLOR4F: {
+      basety = C_TINYUSD_VALUE_COLOR4F;
+      break;
+    }
+    case TYPE_ID_COLOR4D: {
+      basety = C_TINYUSD_VALUE_COLOR4D;
+      break;
+    }
+    case TYPE_ID_TEXCOORD2H: {
+      basety = C_TINYUSD_VALUE_TEXCOORD2H;
+      break;
+    }
+    case TYPE_ID_TEXCOORD2F: {
+      basety = C_TINYUSD_VALUE_TEXCOORD2F;
+      break;
+    }
+    case TYPE_ID_TEXCOORD2D: {
+      basety = C_TINYUSD_VALUE_TEXCOORD2D;
+      break;
+    }
+    case TYPE_ID_TEXCOORD3H: {
+      basety = C_TINYUSD_VALUE_TEXCOORD3H;
+      break;
+    }
+    case TYPE_ID_TEXCOORD3F: {
+      basety = C_TINYUSD_VALUE_TEXCOORD3F;
+      break;
+    }
+    case TYPE_ID_TEXCOORD3D: {
+      basety = C_TINYUSD_VALUE_TEXCOORD3D;
+      break;
+    }
+    case TYPE_ID_NORMAL3H: {
+      basety = C_TINYUSD_VALUE_NORMAL3H;
+      break;
+    }
+    case TYPE_ID_NORMAL3F: {
+      basety = C_TINYUSD_VALUE_NORMAL3F;
+      break;
+    }
+    case TYPE_ID_NORMAL3D: {
+      basety = C_TINYUSD_VALUE_NORMAL3D;
+      break;
+    }
+    case TYPE_ID_VECTOR3H: {
+      basety = C_TINYUSD_VALUE_VECTOR3H;
+      break;
+    }
+    case TYPE_ID_VECTOR3F: {
+      basety = C_TINYUSD_VALUE_VECTOR3F;
+      break;
+    }
+    case TYPE_ID_VECTOR3D: {
+      basety = C_TINYUSD_VALUE_VECTOR3D;
+      break;
+    }
+    case TYPE_ID_POINT3H: {
+      basety = C_TINYUSD_VALUE_POINT3H;
+      break;
+    }
+    case TYPE_ID_POINT3F: {
+      basety = C_TINYUSD_VALUE_POINT3F;
+      break;
+    }
+    case TYPE_ID_POINT3D: {
+      basety = C_TINYUSD_VALUE_POINT3D;
+      break;
+    }
+    case TYPE_ID_MATRIX2F:
+    case TYPE_ID_MATRIX2D: {
+      basety = C_TINYUSD_VALUE_MATRIX2D;
+      break;
+    }
+    case TYPE_ID_MATRIX3F:
+    case TYPE_ID_MATRIX3D: {
+      basety = C_TINYUSD_VALUE_MATRIX3D;
+      break;
+    }
+    case TYPE_ID_MATRIX4F:
+    case TYPE_ID_MATRIX4D: {
+      basety = C_TINYUSD_VALUE_MATRIX4D;
+      break;
+    }
+    case TYPE_ID_FRAME4D: {
+      basety = C_TINYUSD_VALUE_FRAME4D;
       break;
     }
     case TYPE_ID_CUSTOMDATA: {
@@ -315,11 +500,11 @@ const char *c_tinyusd_value_type_name(CTinyUSDValueType value_type) {
       break;
     }
     case C_TINYUSD_VALUE_MATRIX3D: {
-      tyname = "matrix2d";
+      tyname = "matrix3d";
       break;
     }
     case C_TINYUSD_VALUE_MATRIX4D: {
-      tyname = "matrix2d";
+      tyname = "matrix4d";
       break;
     }
     case C_TINYUSD_VALUE_FRAME4D: {
@@ -1121,6 +1306,232 @@ int c_tinyusd_prim_get_child(const CTinyUSDPrim *prim,
   (*child_prim) = reinterpret_cast<const CTinyUSDPrim *>(pchild);
 
   return 1;
+}
+
+static bool c_tinyusd_find_prim_property(const tinyusdz::Prim *pprim,
+                                         const char *prop_name,
+                                         tinyusdz::Property *prop) {
+  if (!pprim || !prop_name || !prop) {
+    return false;
+  }
+
+  std::string prop_name_str(prop_name);
+  std::string err;
+  if (tinyusdz::tydra::GetProperty(*pprim, prop_name_str, prop, &err)) {
+    return true;
+  }
+
+  auto try_props_map = [&](const auto &typed_prim) -> bool {
+    const auto it = typed_prim.props.find(prop_name_str);
+    if (it == typed_prim.props.end()) {
+      return false;
+    }
+
+    (*prop) = it->second;
+    return true;
+  };
+
+  if (pprim->is<tinyusdz::Model>()) {
+    return try_props_map(*pprim->as<tinyusdz::Model>());
+  } else if (pprim->is<tinyusdz::Xform>()) {
+    return try_props_map(*pprim->as<tinyusdz::Xform>());
+  } else if (pprim->is<tinyusdz::Scope>()) {
+    return try_props_map(*pprim->as<tinyusdz::Scope>());
+  } else if (pprim->is<tinyusdz::GeomMesh>()) {
+    return try_props_map(*pprim->as<tinyusdz::GeomMesh>());
+  } else if (pprim->is<tinyusdz::GeomSubset>()) {
+    return try_props_map(*pprim->as<tinyusdz::GeomSubset>());
+  } else if (pprim->is<tinyusdz::GeomCamera>()) {
+    return try_props_map(*pprim->as<tinyusdz::GeomCamera>());
+  } else if (pprim->is<tinyusdz::Shader>()) {
+    return try_props_map(*pprim->as<tinyusdz::Shader>());
+  } else if (pprim->is<tinyusdz::Material>()) {
+    return try_props_map(*pprim->as<tinyusdz::Material>());
+  } else if (pprim->is<tinyusdz::SkelRoot>()) {
+    return try_props_map(*pprim->as<tinyusdz::SkelRoot>());
+  } else if (pprim->is<tinyusdz::BlendShape>()) {
+    return try_props_map(*pprim->as<tinyusdz::BlendShape>());
+  } else if (pprim->is<tinyusdz::Skeleton>()) {
+    return try_props_map(*pprim->as<tinyusdz::Skeleton>());
+  } else if (pprim->is<tinyusdz::SkelAnimation>()) {
+    return try_props_map(*pprim->as<tinyusdz::SkelAnimation>());
+  } else if (pprim->is<tinyusdz::SphereLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::SphereLight>());
+  } else if (pprim->is<tinyusdz::CylinderLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::CylinderLight>());
+  } else if (pprim->is<tinyusdz::RectLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::RectLight>());
+  } else if (pprim->is<tinyusdz::DiskLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::DiskLight>());
+  } else if (pprim->is<tinyusdz::DistantLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::DistantLight>());
+  } else if (pprim->is<tinyusdz::DomeLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::DomeLight>());
+  } else if (pprim->is<tinyusdz::GeometryLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::GeometryLight>());
+  } else if (pprim->is<tinyusdz::PortalLight>()) {
+    return try_props_map(*pprim->as<tinyusdz::PortalLight>());
+  }
+
+  return false;
+}
+
+int c_tinyusd_prim_property_get_value(const CTinyUSDPrim *prim,
+                                      const char *prop_name,
+                                      const CTinyUSDValue **value) {
+  if (!prim) {
+    return 0;
+  }
+
+  if (!prop_name) {
+    return 0;
+  }
+
+  if (!value) {
+    return 0;
+  }
+
+  const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
+
+  tinyusdz::Property prop;
+  if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
+    return 0;
+  }
+
+  if (!prop.is_attribute()) {
+    return 0;
+  }
+
+  const tinyusdz::Attribute &attr = prop.get_attribute();
+  if (!attr.is_value()) {
+    return 0;
+  }
+
+  static thread_local tinyusdz::value::Value *local_value = nullptr;
+  if (!local_value) {
+    local_value = new tinyusdz::value::Value(nullptr);
+  }
+
+  (*local_value) = attr.get_var().value_raw();
+  (*value) = reinterpret_cast<const CTinyUSDValue *>(local_value);
+
+  return 1;
+}
+
+int c_tinyusd_prim_property_get_type_name(const CTinyUSDPrim *prim,
+                                          const char *prop_name,
+                                          c_tinyusd_string_t *type_name_out) {
+  if (!prim || !prop_name || !type_name_out) {
+    return 0;
+  }
+
+  const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
+  tinyusdz::Property prop;
+  if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
+    return 0;
+  }
+
+  std::string type_name = prop.value_type_name();
+  if (type_name.empty()) {
+    if (prop.is_relationship()) {
+      type_name = "relationship";
+    } else if (prop.is_attribute_connection()) {
+      type_name = "connection";
+    } else if (prop.is_attribute()) {
+      type_name = "attribute";
+    } else {
+      type_name = "unknown";
+    }
+  }
+
+  return c_tinyusd_string_replace(type_name_out, type_name.c_str());
+}
+
+int c_tinyusd_prim_property_to_string(const CTinyUSDPrim *prim,
+                                      const char *prop_name,
+                                      c_tinyusd_string_t *text_out) {
+  if (!prim || !prop_name || !text_out) {
+    return 0;
+  }
+
+  const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
+  tinyusdz::Property prop;
+  if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
+    return 0;
+  }
+
+  std::string text;
+
+  if (prop.is_attribute()) {
+    const tinyusdz::Attribute &attr = prop.get_attribute();
+    if (attr.is_value()) {
+      text = tinyusdz::value::pprint_value(attr.get_var().value_raw(), 0, false);
+    } else if (attr.is_connection()) {
+      const auto &connections = attr.connections();
+      text = "connect=[";
+      for (size_t i = 0; i < connections.size(); i++) {
+        if (i > 0) {
+          text += ", ";
+        }
+        text += connections[i].full_path_name();
+      }
+      text += "]";
+    } else if (attr.is_timesamples()) {
+      text = "[timesamples]";
+    } else if (attr.is_blocked()) {
+      text = "[blocked]";
+    } else {
+      text = "[attribute]";
+    }
+  } else if (prop.is_relationship()) {
+    std::vector<tinyusdz::Path> targets = prop.get_relationTargets();
+    text = "rel=[";
+    for (size_t i = 0; i < targets.size(); i++) {
+      if (i > 0) {
+        text += ", ";
+      }
+      text += targets[i].full_path_name();
+    }
+    text += "]";
+  } else {
+    text = "[property]";
+  }
+
+  return c_tinyusd_string_replace(text_out, text.c_str());
+}
+
+int c_tinyusd_prim_property_metadata_to_string(const CTinyUSDPrim *prim,
+                                               const char *prop_name,
+                                               c_tinyusd_string_t *text_out) {
+  if (!prim || !prop_name || !text_out) {
+    return 0;
+  }
+
+  const tinyusdz::Prim *pprim = reinterpret_cast<const tinyusdz::Prim *>(prim);
+  tinyusdz::Property prop;
+  if (!c_tinyusd_find_prim_property(pprim, prop_name, &prop)) {
+    return 0;
+  }
+
+  std::string text;
+
+  if (prop.is_attribute()) {
+    const tinyusdz::AttrMeta &meta = prop.get_attribute().metas();
+    if (meta.authored()) {
+      text = tinyusdz::print_attr_metas(meta, 0);
+    }
+  } else if (prop.is_relationship()) {
+    const tinyusdz::AttrMeta &meta = prop.get_relationship().metas();
+    if (meta.authored()) {
+      text = tinyusdz::print_attr_metas(meta, 0);
+    }
+  }
+
+  if (text.empty()) {
+    text = "[no-authored-metadata]";
+  }
+
+  return c_tinyusd_string_replace(text_out, text.c_str());
 }
 
 int c_tinyusd_prim_del_child(CTinyUSDPrim *prim, uint64_t child_idx) {
@@ -2123,6 +2534,113 @@ ATTRIB_VALUE_AS_IMPL(float2, value::float2, c_tinyusd_float2_t);
 ATTRIB_VALUE_AS_IMPL(float3, value::float3, c_tinyusd_float3_t);
 ATTRIB_VALUE_AS_IMPL(float4, value::float4, c_tinyusd_float4_t);
 
+int c_tinyusd_value_as_string(const CTinyUSDValue *_value,
+                              c_tinyusd_string_t *val) {
+  if (!_value) {
+    return 0;
+  }
+
+  if (!val) {
+    return 0;
+  }
+
+  const tinyusdz::value::Value *vp =
+      reinterpret_cast<const tinyusdz::value::Value *>(_value);
+  if (const auto pv = vp->as<std::string>()) {
+    return c_tinyusd_string_replace(val, pv->c_str());
+  }
+
+  return 0;
+}
+
+int c_tinyusd_value_as_token(const CTinyUSDValue *_value,
+                             c_tinyusd_string_t *val) {
+  if (!_value) {
+    return 0;
+  }
+
+  if (!val) {
+    return 0;
+  }
+
+  const tinyusdz::value::Value *vp =
+      reinterpret_cast<const tinyusdz::value::Value *>(_value);
+  if (const auto pv = vp->as<tinyusdz::value::token>()) {
+    return c_tinyusd_string_replace(val, pv->str().c_str());
+  }
+
+  return 0;
+}
+
+int c_tinyusd_value_array_size(const CTinyUSDValue *_value, uint64_t *n) {
+  if (!_value) {
+    return 0;
+  }
+
+  if (!n) {
+    return 0;
+  }
+
+  const tinyusdz::value::Value *vp =
+      reinterpret_cast<const tinyusdz::value::Value *>(_value);
+  (*n) = uint64_t(vp->array_size());
+  return 1;
+}
+
+int c_tinyusd_value_as_array_int(const CTinyUSDValue *_value, int *vals,
+                                 uint64_t n) {
+  if (!_value) {
+    return 0;
+  }
+
+  if (!vals && n > 0) {
+    return 0;
+  }
+
+  const tinyusdz::value::Value *vp =
+      reinterpret_cast<const tinyusdz::value::Value *>(_value);
+  if (const auto pv = vp->as<std::vector<int>>()) {
+    if (pv->size() > size_t(n)) {
+      return 0;
+    }
+
+    if (!pv->empty()) {
+      memcpy(vals, pv->data(), sizeof(int) * pv->size());
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+
+int c_tinyusd_value_as_array_float(const CTinyUSDValue *_value, float *vals,
+                                   uint64_t n) {
+  if (!_value) {
+    return 0;
+  }
+
+  if (!vals && n > 0) {
+    return 0;
+  }
+
+  const tinyusdz::value::Value *vp =
+      reinterpret_cast<const tinyusdz::value::Value *>(_value);
+  if (const auto pv = vp->as<std::vector<float>>()) {
+    if (pv->size() > size_t(n)) {
+      return 0;
+    }
+
+    if (!pv->empty()) {
+      memcpy(vals, pv->data(), sizeof(float) * pv->size());
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+
 
 int c_tinyusd_value_to_string(const CTinyUSDValue *aval, c_tinyusd_string_t *str) {
   if (!aval) {
@@ -2156,8 +2674,110 @@ int c_tinyusd_prim_get_property_names(const CTinyUSDPrim *prim, c_tinyusd_token_
   const Prim *p = reinterpret_cast<const Prim *>(prim);
   std::vector<std::string> ps;
   std::string err;
-  if (!tydra::GetPropertyNames(*p, &ps, &err)) {
-    // err is suppressed.
+  std::vector<std::string> rs;
+  std::string rel_err;
+
+  bool has_any = false;
+  if (tydra::GetPropertyNames(*p, &ps, &err)) {
+    has_any = true;
+  }
+
+  if (tydra::GetRelationshipNames(*p, &rs, &rel_err)) {
+    has_any = true;
+
+    for (const auto &r : rs) {
+      if (std::find(ps.begin(), ps.end(), r) == ps.end()) {
+        ps.push_back(r);
+      }
+    }
+  }
+
+  auto append_name = [&ps](const std::string &name) {
+    if (std::find(ps.begin(), ps.end(), name) == ps.end()) {
+      ps.push_back(name);
+    }
+  };
+
+  auto append_props_map = [&append_name](const auto &typed_prim) {
+    for (const auto &kv : typed_prim.props) {
+      append_name(kv.first);
+    }
+  };
+
+  auto append_property_names_tokens = [&append_name](const auto &typed_prim) {
+    for (const auto &tok : typed_prim.propertyNames()) {
+      append_name(tok.str());
+    }
+  };
+
+  auto append_names_for_typed_prim = [&](const auto &typed_prim) {
+    append_props_map(typed_prim);
+    append_property_names_tokens(typed_prim);
+  };
+
+  if (p->is<tinyusdz::Model>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::Model>());
+    has_any = true;
+  } else if (p->is<tinyusdz::Xform>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::Xform>());
+    has_any = true;
+  } else if (p->is<tinyusdz::Scope>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::Scope>());
+    has_any = true;
+  } else if (p->is<tinyusdz::GeomMesh>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::GeomMesh>());
+    has_any = true;
+  } else if (p->is<tinyusdz::GeomSubset>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::GeomSubset>());
+    has_any = true;
+  } else if (p->is<tinyusdz::GeomCamera>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::GeomCamera>());
+    has_any = true;
+  } else if (p->is<tinyusdz::Shader>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::Shader>());
+    has_any = true;
+  } else if (p->is<tinyusdz::Material>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::Material>());
+    has_any = true;
+  } else if (p->is<tinyusdz::SkelRoot>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::SkelRoot>());
+    has_any = true;
+  } else if (p->is<tinyusdz::BlendShape>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::BlendShape>());
+    has_any = true;
+  } else if (p->is<tinyusdz::Skeleton>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::Skeleton>());
+    has_any = true;
+  } else if (p->is<tinyusdz::SkelAnimation>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::SkelAnimation>());
+    has_any = true;
+  } else if (p->is<tinyusdz::SphereLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::SphereLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::CylinderLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::CylinderLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::RectLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::RectLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::DiskLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::DiskLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::DistantLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::DistantLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::DomeLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::DomeLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::GeometryLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::GeometryLight>());
+    has_any = true;
+  } else if (p->is<tinyusdz::PortalLight>()) {
+    append_names_for_typed_prim(*p->as<tinyusdz::PortalLight>());
+    has_any = true;
+  }
+
+  if (!has_any) {
     return 0;
   }
 

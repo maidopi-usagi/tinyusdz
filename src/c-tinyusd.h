@@ -613,6 +613,20 @@ C_TINYUSD_EXPORT int c_tinyusd_value_as_float2(const CTinyUSDValue *value, c_tin
 C_TINYUSD_EXPORT int c_tinyusd_value_as_float3(const CTinyUSDValue *value, c_tinyusd_float3_t *val);
 C_TINYUSD_EXPORT int c_tinyusd_value_as_float4(const CTinyUSDValue *value, c_tinyusd_float4_t *val);
 
+C_TINYUSD_EXPORT int c_tinyusd_value_as_string(const CTinyUSDValue *value,
+                                               c_tinyusd_string_t *val);
+C_TINYUSD_EXPORT int c_tinyusd_value_as_token(const CTinyUSDValue *value,
+                                              c_tinyusd_string_t *val);
+
+C_TINYUSD_EXPORT int c_tinyusd_value_array_size(const CTinyUSDValue *value,
+                                                uint64_t *n);
+C_TINYUSD_EXPORT int c_tinyusd_value_as_array_int(const CTinyUSDValue *value,
+                                                  int *vals,
+                                                  uint64_t n);
+C_TINYUSD_EXPORT int c_tinyusd_value_as_array_float(const CTinyUSDValue *value,
+                                                    float *vals,
+                                                    uint64_t n);
+
 
 /*   TODO: List up other types... */
 
@@ -773,6 +787,41 @@ C_TINYUSD_EXPORT int c_tinyusd_prim_get_property_names(
 C_TINYUSD_EXPORT int c_tinyusd_prim_property_get(const CTinyUSDPrim *prim,
                                                  const char *prop_name,
                                                  CTinyUSDProperty *prop);
+
+/*
+   Get Prim's Property(Attribute) value by property name.
+   Returns 0 when property is not found, not an Attribute value, or invalid.
+
+   Returned value pointer refers to internal Prim data and must not be freed.
+ */
+C_TINYUSD_EXPORT int c_tinyusd_prim_property_get_value(
+    const CTinyUSDPrim *prim, const char *prop_name,
+    const CTinyUSDValue **value);
+
+/*
+   Get Prim's Property value type name by property name.
+   Returns 1 on success. 0 on failure.
+ */
+C_TINYUSD_EXPORT int c_tinyusd_prim_property_get_type_name(
+  const CTinyUSDPrim *prim, const char *prop_name,
+  c_tinyusd_string_t *type_name_out);
+
+/*
+   Convert Prim's Property to readable string by property name.
+   This also works for connection/relationship properties.
+   Returns 1 on success. 0 on failure.
+ */
+C_TINYUSD_EXPORT int c_tinyusd_prim_property_to_string(
+  const CTinyUSDPrim *prim, const char *prop_name,
+  c_tinyusd_string_t *text_out);
+
+/*
+   Convert Prim's Property metadata to readable string by property name.
+   Returns 1 on success. 0 on failure.
+ */
+C_TINYUSD_EXPORT int c_tinyusd_prim_property_metadata_to_string(
+  const CTinyUSDPrim *prim, const char *prop_name,
+  c_tinyusd_string_t *text_out);
 
 /*
    Add property to the Prim.

@@ -1118,7 +1118,7 @@ nonstd::expected<bool, std::string> GetPrimProperty(
 
   TO_PROPERTY("points", mesh.points)
   TO_PROPERTY("faceVertexCounts", mesh.faceVertexCounts)
-  TO_PROPERTY("faceVertexIndices", mesh.faceVertexCounts)
+  TO_PROPERTY("faceVertexIndices", mesh.faceVertexIndices)
   TO_PROPERTY("normals", mesh.normals)
   TO_PROPERTY("velocities", mesh.velocities)
   TO_PROPERTY("cornerIndices", mesh.cornerIndices)
@@ -1832,7 +1832,71 @@ bool GetPrimPropertyNamesImpl(const GeomMesh &mesh,
       prop_names->push_back("normals");
     }
 
-    DCOUT("TODO: more attrs...");
+    if (mesh.velocities.authored()) {
+      prop_names->push_back("velocities");
+    }
+
+    if (mesh.faceVertexCounts.authored()) {
+      prop_names->push_back("faceVertexCounts");
+    }
+
+    if (mesh.faceVertexIndices.authored()) {
+      prop_names->push_back("faceVertexIndices");
+    }
+
+    if (mesh.cornerIndices.authored()) {
+      prop_names->push_back("cornerIndices");
+    }
+
+    if (mesh.cornerSharpnesses.authored()) {
+      prop_names->push_back("cornerSharpnesses");
+    }
+
+    if (mesh.creaseIndices.authored()) {
+      prop_names->push_back("creaseIndices");
+    }
+
+    if (mesh.creaseLengths.authored()) {
+      prop_names->push_back("creaseLengths");
+    }
+
+    if (mesh.creaseSharpnesses.authored()) {
+      prop_names->push_back("creaseSharpnesses");
+    }
+
+    if (mesh.holeIndices.authored()) {
+      prop_names->push_back("holeIndices");
+    }
+
+    if (mesh.interpolateBoundary.authored()) {
+      prop_names->push_back("interpolateBoundary");
+    }
+
+    if (mesh.subdivisionScheme.authored()) {
+      prop_names->push_back("subdivisionScheme");
+    }
+
+    if (mesh.faceVaryingLinearInterpolation.authored()) {
+      prop_names->push_back("faceVaryingLinearInterpolation");
+    }
+
+    if (mesh.blendShapes.authored()) {
+      prop_names->push_back("skel:blendShapes");
+    }
+
+    DCOUT("TODO: maybe more attrs...");
+  }
+
+  if (rel_prop) {
+    if (mesh.skeleton) {
+      prop_names->push_back("skel:skeleton");
+    }
+
+    if (mesh.blendShapeTargets) {
+      prop_names->push_back("skel:blendShapeTargets");
+    }
+
+    DCOUT("TODO: maybe more rels...");
   }
 
   return true;
