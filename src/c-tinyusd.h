@@ -973,6 +973,16 @@ C_TINYUSD_EXPORT int c_tinyusd_is_usdc_memory(const uint8_t *addr,
 C_TINYUSD_EXPORT int c_tinyusd_is_usdz_memory(const uint8_t *addr,
                                               const size_t nbytes);
 
+typedef struct c_tinyusd_usd_load_options_t {
+  int32_t num_threads;
+  int32_t max_memory_limit_in_mb;
+  int32_t load_assets;
+  int32_t do_composition;
+  int32_t load_sublayers;
+  int32_t load_references;
+  int32_t load_payloads;
+} c_tinyusd_usd_load_options_t;
+
 /*
  * Return 1 upon success. 0 when failed.
  */
@@ -980,6 +990,12 @@ C_TINYUSD_EXPORT int c_tinyusd_load_usd_from_file(const char *filename,
                                                   CTinyUSDStage *stage,
                                                   c_tinyusd_string_t *warn,
                                                   c_tinyusd_string_t *err);
+C_TINYUSD_EXPORT int c_tinyusd_load_usd_from_file_with_options(
+  const char *filename,
+  CTinyUSDStage *stage,
+  c_tinyusd_string_t *warn,
+  c_tinyusd_string_t *err,
+  const c_tinyusd_usd_load_options_t *options);
 C_TINYUSD_EXPORT int c_tinyusd_load_usda_from_file(const char *filename,
                                                    CTinyUSDStage *stage,
                                                    c_tinyusd_string_t *warn,
@@ -992,6 +1008,22 @@ C_TINYUSD_EXPORT int c_tinyusd_load_usdz_from_file(const char *filename,
                                                    CTinyUSDStage *stage,
                                                    c_tinyusd_string_t *warn,
                                                    c_tinyusd_string_t *err);
+
+/*
+ * Enumerate composition arcs from USD layer representation.
+ *
+ * Output text format is one arc per line, tab-separated:
+ *   kind<TAB>sourcePath<TAB>assetPath<TAB>targetPrimPath
+ * where kind is one of: sublayer, reference, payload.
+ *
+ * Return 1 upon success, 0 when failed.
+ */
+C_TINYUSD_EXPORT int c_tinyusd_composition_arcs_to_string_from_file(
+  const char *filename,
+  c_tinyusd_string_t *arcs_out,
+  c_tinyusd_string_t *warn,
+  c_tinyusd_string_t *err,
+  const c_tinyusd_usd_load_options_t *options);
 
 /*
  * wide char version. especially for Windows UTF-16 filename.

@@ -2274,6 +2274,15 @@ int c_tinyusd_is_usd_file(const char *filename) {
 int c_tinyusd_load_usd_from_file(const char *filename, CTinyUSDStage *stage,
                                  c_tinyusd_string_t *warn,
                                  c_tinyusd_string_t *err) {
+  return c_tinyusd_load_usd_from_file_with_options(filename, stage, warn, err, nullptr);
+}
+
+int c_tinyusd_load_usd_from_file_with_options(
+    const char *filename,
+    CTinyUSDStage *stage,
+    c_tinyusd_string_t *warn,
+    c_tinyusd_string_t *err,
+    const c_tinyusd_usd_load_options_t *options) {
   // tinyusdz::Stage *p = new tinyusdz::Stage();
 
   if (!stage) {
@@ -2286,9 +2295,20 @@ int c_tinyusd_load_usd_from_file(const char *filename, CTinyUSDStage *stage,
   std::string _warn;
   std::string _err;
 
+  tinyusdz::USDLoadOptions load_options;
+  if (options) {
+    load_options.num_threads = options->num_threads;
+    load_options.max_memory_limit_in_mb = options->max_memory_limit_in_mb;
+    load_options.load_assets = options->load_assets != 0;
+    load_options.do_composition = options->do_composition != 0;
+    load_options.load_sublayers = options->load_sublayers != 0;
+    load_options.load_references = options->load_references != 0;
+    load_options.load_payloads = options->load_payloads != 0;
+  }
+
   bool ret = tinyusdz::LoadUSDFromFile(
       filename, reinterpret_cast<tinyusdz::Stage *>(stage), &_warn,
-      &_err);
+      &_err, load_options);
 
   if (_warn.size() && warn) {
     c_tinyusd_string_replace(warn, _warn.c_str());
@@ -2405,6 +2425,124 @@ int c_tinyusd_load_usdz_from_file(const char *filename, CTinyUSDStage *stage,
   }
 
   return 1;
+}
+
+namespace {
+
+void c_tinyusd_append_composition_arc_line(std::string *out,
+                                           const char *kind,
+                                           const std::string &source_path,
+                                           const std::string &asset_path,
+                                           const std::string &target_prim_path) {
+  if (!out || !kind) {
+    return;
+  }
+
+  (*out) += kind;
+  (*out) += "\t";
+  (*out) += source_path;
+  (*out) += "\t";
+  (*out) += asset_path;
+  (*out) += "\t";
+  (*out) += target_prim_path;
+  (*out) += "\n";
+}
+
+void c_tinyusd_collect_primspec_composition_arcs(
+    const tinyusdz::PrimSpec &primspec,
+    const std::string &current_path,
+    std::string *out) {
+  if (!out) {
+    return;
+  }
+
+  if (primspec.metas().references.has_value()) {
+    const auto &references = primspec.metas().references.value().second;
+    for (const auto &reference : references) {
+      const std::string asset_path = reference.asset_path.GetAssetPath();
+      const std::string target_path = reference.prim_path.is_valid()
+          ? reference.prim_path.full_path_name()
+          : std::string();
+      c_tinyusd_append_composition_arc_line(out, "reference", current_path,
+                                            asset_path, target_path);
+    }
+  }
+
+  if (primspec.metas().payload.has_value()) {
+    const auto &payloads = primspec.metas().payload.value().second;
+    for (const auto &payload : payloads) {
+      const std::string asset_path = payload.asset_path.GetAssetPath();
+      const std::string target_path = payload.prim_path.is_valid()
+          ? payload.prim_path.full_path_name()
+          : std::string();
+      c_tinyusd_append_composition_arc_line(out, "payload", current_path,
+                                            asset_path, target_path);
+    }
+  }
+
+  for (const auto &child : primspec.children()) {
+    const std::string child_path =
+        (current_path == "/") ? ("/" + child.name()) : (current_path + "/" + child.name());
+    c_tinyusd_collect_primspec_composition_arcs(child, child_path, out);
+  }
+}
+
+}  // namespace
+
+int c_tinyusd_composition_arcs_to_string_from_file(
+    const char *filename,
+    c_tinyusd_string_t *arcs_out,
+    c_tinyusd_string_t *warn,
+    c_tinyusd_string_t *err,
+    const c_tinyusd_usd_load_options_t *options) {
+  if (!filename || !arcs_out) {
+    return 0;
+  }
+
+  tinyusdz::USDLoadOptions load_options;
+  if (options) {
+    load_options.num_threads = options->num_threads;
+    load_options.max_memory_limit_in_mb = options->max_memory_limit_in_mb;
+    load_options.load_assets = options->load_assets != 0;
+    load_options.do_composition = options->do_composition != 0;
+    load_options.load_sublayers = options->load_sublayers != 0;
+    load_options.load_references = options->load_references != 0;
+    load_options.load_payloads = options->load_payloads != 0;
+  }
+
+  tinyusdz::Layer layer;
+  std::string _warn;
+  std::string _err;
+
+  const bool ok = tinyusdz::LoadLayerFromFile(filename, &layer, &_warn, &_err, load_options);
+  if (!ok) {
+    if (err) {
+      c_tinyusd_string_replace(err, _err.c_str());
+    }
+    return 0;
+  }
+
+  if (!_warn.empty() && warn) {
+    c_tinyusd_string_replace(warn, _warn.c_str());
+  }
+
+  std::string text;
+
+  for (const auto &sub_layer : layer.metas().subLayers) {
+    c_tinyusd_append_composition_arc_line(
+        &text,
+        "sublayer",
+        "/",
+        sub_layer.assetPath.GetAssetPath(),
+        std::string());
+  }
+
+  for (const auto &entry : layer.primspecs()) {
+    const std::string root_path = "/" + entry.first;
+    c_tinyusd_collect_primspec_composition_arcs(entry.second, root_path, &text);
+  }
+
+  return c_tinyusd_string_replace(arcs_out, text.c_str());
 }
 
 namespace {
